@@ -51,11 +51,13 @@ FifoLogger.error("Failed to connect to database", new Error("Connection timeout"
 // No need to call close() explicitly for STDOUT unless coordinating shutdown
 console.log("Application End");
 ```
+which will lead to this output:<br>
+![basic example output](./imgs/screenshot_1.png)
 
 ### Logging to file
 
 ```bash
-import { FifoLogger, FifoLoggerConfig, LogDestination, LogLevel } from 'fifologger'; // Adjust path/name as needed
+import { FifoLogger, FifoLoggerConfig, LogDestination, LogLevel } from 'fifoLogger'; // Adjust path as needed
 
 console.log("Application Start");
 
@@ -83,6 +85,8 @@ FifoLogger.close(() => {
   process.exit(0);
 });
 ```
+which will lead to this output:<br>
+![basic example output](./imgs/screenshot_2.png)
 
 ## Configuration Options
 The FifoLogger.init() method accepts a configuration object (FifoLoggerConfig) with the following options:
@@ -112,6 +116,7 @@ FifoLogger provides a static API:
 See the /examples directory in the repository for more detailed usage scenarios:
 
 - **simple-stdout.ts**: Basic console logging.
+- **simple-file.ts**: simple file json logging.
 - **file1000.ts**: Logging many messages quickly to a file.
 - **stdout1000.ts**: Logging many messages quickly to the console.
 - **slowFile1000.ts**: Demonstrates using a slower dequeue timeout.
