@@ -37,14 +37,15 @@ The run.sh bash script will be useful to launch the examples.
 ```bash
 import { FifoLogger, LogLevel } from 'fifoLogger'; // Adjust path as needed
 
+const testAttachedObj1 = { userId: 123 }
 console.log("Application Start");
 
 // Log messages
 FifoLogger.log(LogLevel.WARNING, "2 - Simple Message without attachments")
 
 FifoLogger.info("Server started successfully.");
-FifoLogger.debug("Debugging user session", { userId: 123 });
-FifoLogger.warn("Configuration value missing, using default.");
+FifoLogger.debug("not visible, default log level is INFO");
+FifoLogger.warn("Configuration value missing, using default.", testAttachedObj1);
 FifoLogger.error("Failed to connect to database", new Error("Connection timeout"));
 
 // No need to call close() explicitly for STDOUT unless coordinating shutdown
