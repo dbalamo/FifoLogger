@@ -32,6 +32,8 @@ export interface FifoLoggerConfig {
   jsonMode?: boolean;
   fileName?: string;
   dequeueTimeoutMs?: DequeueTimeoutMs;
+  rejuvenateLog?: boolean;
+  rejuvenateSizeMB?: number;
 }
 
 export class FifoLogger {
@@ -39,6 +41,8 @@ export class FifoLogger {
   //private constants
   private static readonly MAX_STREAM_ERROR_RETRIES = 5;
   private static readonly STREAM_ERROR_RETRY_DELAY_MS = 1000;
+  private static readonly TO_REJUVENATE_MS = 10000;
+  private static readonly ONE_MB_BYTES = 1048576
 
   //configuration private variables
   private static _dequeueTimeoutMs: DequeueTimeoutMs = DequeueTimeoutMs.STANDARD;
@@ -57,6 +61,9 @@ export class FifoLogger {
   private static _closeRequested: boolean = false
   private static _initialized = false;
   private static _streamErrorRetryCount = 0;
+  private static _rejuvenateTimeout: NodeJS.Timeout | null = null
+  private static _mustRejuvenate: boolean = false;
+  private static _rejuvenateSizeMB: number = 0;
 
   static init(flc: FifoLoggerConfig) {
     if (FifoLogger._initialized) {
@@ -76,6 +83,14 @@ export class FifoLogger {
       FifoLogger.openStream()
       FifoLogger.setDequeueTimeout()
     }
+
+    if (flc.rejuvenateLog && flc.rejuvenateSizeMB && flc.fileName && flc.destination === LogDestination.FILE) {
+      FifoLogger._rejuvenateSizeMB = flc.rejuvenateSizeMB
+      FifoLogger._rejuvenateTimeout = setTimeout(() => {
+        FifoLogger.rejuvenateTimeoutHandler()
+      }, FifoLogger.TO_REJUVENATE_MS);
+    }
+
     FifoLogger._initialized = true
   }
 
@@ -140,7 +155,7 @@ export class FifoLogger {
         }
       })
     } else {
-      if(callback) {
+      if (callback) {
         callback()
       }
     }
@@ -333,6 +348,12 @@ export class FifoLogger {
         break
       }
     }
+
+    if (FifoLogger._mustRejuvenate) {
+      FifoLogger._mustRejuvenate = false
+      FifoLogger.rejuvenateLogFile()
+    }
+
     FifoLogger.setDequeueTimeout()
   }
 
@@ -343,6 +364,54 @@ export class FifoLogger {
         FifoLogger.writeFile(msg)
       }
     }
+  }
+
+  private static rejuvenateTimeoutHandler() {
+    if (FifoLogger._rejuvenateTimeout) {
+      clearTimeout(FifoLogger._rejuvenateTimeout)
+
+      FifoLogger.checkMustRejuvenateLogFile()
+
+      FifoLogger._rejuvenateTimeout = setTimeout(() => {
+        FifoLogger.rejuvenateTimeoutHandler()
+      }, FifoLogger.TO_REJUVENATE_MS);
+    }
+  }
+
+  private static checkMustRejuvenateLogFile() {
+    fs.stat(FifoLogger._filename, (err, stats) => {
+      if (err) {
+        console.error(`FifoLogger: Error stat-ing log file '${FifoLogger._filename}'. Error: ${err.message}`);
+        return;
+      }
+      const actualSize = stats.size;
+      const maxSize = FifoLogger._rejuvenateSizeMB * FifoLogger.ONE_MB_BYTES;
+      if (actualSize >= maxSize) {
+        FifoLogger._mustRejuvenate = true
+      }
+    })
+  }
+
+  private static rejuvenateLogFile() {
+    FifoLogger._bCanWritemore = false
+    FifoLogger._logWriteStream.end(() => {
+      FifoLogger._streamErrorRetryCount = 0
+      let archFile = ""
+      const date = new Date();
+      const dateFormat = `${date.getFullYear()}_${date.getMonth() + 1}_${date.getDate()}_${date.getHours()}_${date.getMinutes()}_${date.getSeconds()}`;
+      const lastDot = FifoLogger._filename.lastIndexOf(".")
+      if (lastDot > 0) {
+        const pre = FifoLogger._filename.substring(0, lastDot)
+        const post = FifoLogger._filename.substring(lastDot)
+        archFile = pre + "_" + dateFormat + post
+      } else {
+        archFile = FifoLogger._filename + "_" + dateFormat
+      }
+      fs.renameSync(FifoLogger._filename, archFile)
+
+      FifoLogger.openStream()
+      FifoLogger._bCanWritemore = true
+    })
   }
 
 }
