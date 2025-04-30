@@ -1,4 +1,8 @@
 {
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/dbalamo/FifoLogger"
+  },
   "name": "fifologger",
   "version": "1.0.0",
   "main": "fifoLogger.ts",
@@ -6,14 +10,23 @@
     "test": "echo \"Error: no test implemented yet - watch in examples folder\" && exit 1",
     "ci": "npm ci"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "keywords": [
+    "logging",
+    "logger",
+    "module",
+    "typescript",
+    "node",
+    "fifo",
+    "console",
+    "file"
+  ],
+  "author": "Davide Bagno, Alessio Bonaldo",
+  "license": "MIT",
   "devDependencies": {
     "@types/node": "^18.19.50",
     "typescript": "^4.9.5"
   },
-  "description": "",
+  "description": "A simple, asynchronous, FIFO (First-In, First-Out) logger for Node.js and TypeScript applications.",
   "dependencies": {
     "ts-node": "^10.9.2"
   }
