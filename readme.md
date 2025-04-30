@@ -99,7 +99,7 @@ The FifoLogger.init() method accepts a configuration object (FifoLoggerConfig) w
 - **useColor** *(boolean, optional)*: Enable/disable colored output (only affects non-JSON terminal output). Default: true.
 - **jsonMode** *(boolean, optional)*: Output logs in JSON format. Default: false.
 - **fileName** *(string, optional)*: The full path to the log file. Required if destination is LogDestination.FILE.
-- **dequeueTimeoutMs** *(DequeueTimeoutMs, optional)*: The interval (in milliseconds) at which the logger attempts to write queued messages to the file. Options: DequeueTimeoutMs.STANDARD (100), DequeueTimeoutMs.EASY (250), DequeueTimeoutMs.MEDIUM (500), DequeueTimeoutMs.SLOW (1000). Default: DequeueTimeoutMs.STANDARD.
+- **dequeueTimeoutMs** *(DequeueTimeoutMs, optional)*: The interval (in milliseconds) at which the logger attempts to write queued messages to the file. Options: DequeueTimeoutMs.FAST (100), DequeueTimeoutMs.STANDARD (250), DequeueTimeoutMs.MEDIUM (500), DequeueTimeoutMs.SLOW (1000). Default: DequeueTimeoutMs.STANDARD.
 - **rejuvenateLog** *(boolean, optional)*: indicates if the log file should be rejuvenated (storicized), once reaching the size limit indicated by the rejuvenateSizeMB parameter. Default: false.
 - **rejuvenateSizeMB** *(number, optional)*: the size limit, in MB, of the log file; once reached this limit, the log will be storicized with a name containig the original file name, plus a suffix in the form "YYYY_MM_DD_HH_MM_SS", and a new file with the name indicated in the config will be created. Default: 10.
 

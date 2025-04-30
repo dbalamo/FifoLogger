@@ -16,8 +16,8 @@ export const LogLevel = {
 export type LogLevel = typeof LogLevel[keyof typeof LogLevel];
 
 export const DequeueTimeoutMs = {
-  STANDARD: 100,
-  EASY: 250,
+  FAST: 100,
+  STANDARD: 250,
   MEDIUM: 500,
   SLOW: 1000,
 } as const;
@@ -168,16 +168,6 @@ export class FifoLogger {
       }, FifoLogger._dequeueTimeoutMs)
     }
   }
-
-  // TODO: check under heavy load - the FD Count must not increment
-  // private static getFDCount() {
-  //   var readdir = require('fs').readdir;
-
-  //   readdir('/proc/self/fd', function (err, list) {
-  //     if (err) throw err;
-  //     console.log("FD COUNT=" + list.length);
-  //   });
-  // }
 
   private static toSeverity(logLevel: LogLevel) {
     switch (logLevel) {
