@@ -16,6 +16,7 @@ A simple, asynchronous, FIFO (First-In, First-Out) logger for Node.js and TypeSc
 *   **Message Truncation:** Automatically truncate messages exceeding a configured maximum length.
 *   **Configurable File Writing Speed:** Adjust the dequeue timeout (`DequeueTimeoutMs`) when writing to files to balance performance and resource usage.
 *   **Robust File Error Handling:** Includes a retry mechanism with backoff for transient file stream errors.
+*   **optional file rejuvenator:** prevents the creation of too large log files, storicizing and rejuvenating periodically the logs.
 *   **Simple Static API:** Easy to integrate and use throughout your application.
 
 ## Installation
@@ -99,6 +100,8 @@ The FifoLogger.init() method accepts a configuration object (FifoLoggerConfig) w
 - **jsonMode** *(boolean, optional)*: Output logs in JSON format. Default: false.
 - **fileName** *(string, optional)*: The full path to the log file. Required if destination is LogDestination.FILE.
 - **dequeueTimeoutMs** *(DequeueTimeoutMs, optional)*: The interval (in milliseconds) at which the logger attempts to write queued messages to the file. Options: DequeueTimeoutMs.STANDARD (100), DequeueTimeoutMs.EASY (250), DequeueTimeoutMs.MEDIUM (500), DequeueTimeoutMs.SLOW (1000). Default: DequeueTimeoutMs.STANDARD.
+- **rejuvenateLog** *(boolean, optional)*: indicates if the log file should be rejuvenated (storicized), once reaching the size limit indicated by the rejuvenateSizeMB parameter. Default: false.
+- **rejuvenateSizeMB** *(number, optional)*: the size limit, in MB, of the log file; once reached this limit, the log will be storicized with a name containig the original file name, plus a suffix in the form "YYYY_MM_DD_HH_MM_SS", and a new file with the name indicated in the config will be created. Default: 10.
 
 ## API Reference
 FifoLogger provides a static API:
@@ -121,6 +124,7 @@ See the /examples directory in the repository for more detailed usage scenarios:
 - **stdout1000.ts**: Logging many messages quickly to the console.
 - **slowFile1000.ts**: Demonstrates using a slower dequeue timeout.
 - **bigFile100.ts**: Shows logging with large attached objects.
+- **rejuvenator.ts**: shows the settings and behaviour of the file rejuvenator.
 
 ## Contributing
 Contributions are welcome! Please feel free to submit issues or pull requests.

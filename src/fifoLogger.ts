@@ -63,7 +63,7 @@ export class FifoLogger {
   private static _streamErrorRetryCount = 0;
   private static _rejuvenateTimeout: NodeJS.Timeout | null = null
   private static _mustRejuvenate: boolean = false;
-  private static _rejuvenateSizeMB: number = 0;
+  private static _rejuvenateSizeMB: number = 10;
 
   static init(flc: FifoLoggerConfig) {
     if (FifoLogger._initialized) {
