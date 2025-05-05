@@ -21,12 +21,22 @@ A simple, asynchronous, FIFO (First-In, First-Out) logger for Node.js and TypeSc
 
 ## Installation
 
-Once it will be published on npm and/or yarn :
+The package is published on npm ( https://www.npmjs.com/package/@dbalamo/fifologger ):<br>
+<br>
+Add in your package.json the dependency:<br>
+```bash
+  "dependencies": {
+    "@dbalamo/fifologger": "^1.0.2"
+  }
+```
+<br>
+and use it in your typescript code like this:
+<br>
 
 ```bash
-npm install fifologger # Or your chosen package name on npm
-# or
-yarn add fifologger
+import {FifoLogger} from '@dbalamo/fifologger'
+...
+FifoLogger.info("this is a TEST");
 ```
 
 ## Usage
