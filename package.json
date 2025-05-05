@@ -1,14 +1,15 @@
 {
   "repository": {
     "type": "git",
-    "url": "https://github.com/dbalamo/FifoLogger"
+    "url": "git+https://github.com/dbalamo/FifoLogger"
   },
-  "name": "fifologger",
-  "version": "1.0.0",
-  "main": "fifoLogger.ts",
+  "name": "@dbalamo/fifologger",
+  "version": "1.0.2",
+  "main": "lib/fifoLogger.js",
   "scripts": {
     "test": "echo \"Error: no test implemented yet - watch in examples folder\" && exit 1",
-    "ci": "npm ci"
+    "ci": "npm ci",
+    "build": "npx tsc"
   },
   "keywords": [
     "logging",
