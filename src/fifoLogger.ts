@@ -38,22 +38,13 @@ export interface FifoLoggerConfig {
 
 export class FifoLogger {
 
-  //private constants
   private static readonly MAX_STREAM_ERROR_RETRIES = 5;
   private static readonly STREAM_ERROR_RETRY_DELAY_MS = 1000;
   private static readonly TO_REJUVENATE_MS = 10000;
   private static readonly ONE_MB_BYTES = 1048576
 
-  //configuration private variables
-  private static _dequeueTimeoutMs: DequeueTimeoutMs = DequeueTimeoutMs.STANDARD;
-  private static _logPrefix = '';
-  private static _hasColoredConsole = typeof module !== 'undefined' && module.exports;
-  private static _minLogLevel = 0;
-  private static _maxEventLength = 0;
-  private static _filename = '';
-  private static _jsonMode = false;
+  private static cfg: FifoLoggerConfig = {}
 
-  //private variables
   private static _logWriteStream: fs.WriteStream | null = null;
   private static _logQueueItems: string[] = [];
   private static _bCanWritemore: boolean = true
@@ -70,16 +61,16 @@ export class FifoLogger {
       return;
     }
 
-    FifoLogger._logPrefix = flc.logPrefix ? flc.logPrefix : '';
-    FifoLogger._minLogLevel = flc.minLogLevel ? flc.minLogLevel : LogLevel.INFO
-    FifoLogger._maxEventLength = flc.maxEventLength ? flc.maxEventLength : 0
+    FifoLogger.cfg.logPrefix = flc.logPrefix ? flc.logPrefix : '';
+    FifoLogger.cfg.minLogLevel = flc.minLogLevel ? flc.minLogLevel : LogLevel.INFO
+    FifoLogger.cfg.maxEventLength = flc.maxEventLength ? flc.maxEventLength : 0
 
-    FifoLogger._hasColoredConsole = flc.useColor ? flc.useColor : true
-    FifoLogger._jsonMode = flc.jsonMode ? flc.jsonMode : false
-    FifoLogger._dequeueTimeoutMs = flc.dequeueTimeoutMs ? flc.dequeueTimeoutMs : 100
+    FifoLogger.cfg.useColor = flc.useColor ? flc.useColor : true
+    FifoLogger.cfg.jsonMode = flc.jsonMode ? flc.jsonMode : false
+    FifoLogger.cfg.dequeueTimeoutMs = flc.dequeueTimeoutMs ? flc.dequeueTimeoutMs : 100
 
     if (flc.destination === LogDestination.FILE && flc.fileName) {
-      FifoLogger._filename = flc.fileName;
+      FifoLogger.cfg.fileName = flc.fileName;
       FifoLogger.openStream()
       FifoLogger.setDequeueTimeout()
     }
@@ -95,7 +86,7 @@ export class FifoLogger {
   }
 
   private static openStream() {
-    FifoLogger._logWriteStream = fs.createWriteStream(FifoLogger._filename, { autoClose: false, flags: 'a' });
+    FifoLogger._logWriteStream = fs.createWriteStream(FifoLogger.cfg.fileName, { autoClose: false, flags: 'a' });
 
     FifoLogger._logWriteStream.on('drain', () => {
       //console.log("DRAIN EVENT RECVD")
@@ -103,7 +94,7 @@ export class FifoLogger {
     });
 
     FifoLogger._logWriteStream.on('error', (error) => {
-      console.error(`FifoLogger: Error writing to file '${FifoLogger._filename}'. Error: ${error.message}`);
+      console.error(`FifoLogger: Error writing to file '${FifoLogger.cfg.fileName}'. Error: ${error.message}`);
       FifoLogger.onStreamError()
     });
   }
@@ -131,7 +122,7 @@ export class FifoLogger {
       }, delay);
     } else {
       console.error(`FifoLogger: Max retries reached for opening log file. File logging disabled.`);
-      FifoLogger._filename = '';
+      FifoLogger.cfg.fileName = '';
     }
   }
 
@@ -165,7 +156,7 @@ export class FifoLogger {
     if (!FifoLogger._timeout) {
       FifoLogger._timeout = setTimeout(() => {
         FifoLogger.dequeueTimeoutHandler()
-      }, FifoLogger._dequeueTimeoutMs)
+      }, FifoLogger.cfg.dequeueTimeoutMs)
     }
   }
 
@@ -185,14 +176,14 @@ export class FifoLogger {
       return;
     }
 
-    if (!FifoLogger._timeout && FifoLogger._logWriteStream && FifoLogger._filename && FifoLogger._filename.length > 0) {
+    if (!FifoLogger._timeout && FifoLogger._logWriteStream && FifoLogger.cfg.fileName && FifoLogger.cfg.fileName.length > 0) {
       FifoLogger.setDequeueTimeout()
     }
 
-    if (logLevel >= FifoLogger._minLogLevel) {
+    if (logLevel >= FifoLogger.cfg.minLogLevel) {
       const msg = FifoLogger.buildMessage(
-        FifoLogger._hasColoredConsole,
-        FifoLogger._jsonMode,
+        FifoLogger.cfg.useColor,
+        FifoLogger.cfg.jsonMode,
         logLevel,
         message,
         optionalParams
@@ -234,8 +225,8 @@ export class FifoLogger {
       }
     }
 
-    if (FifoLogger._maxEventLength > 0 && msg.length > FifoLogger._maxEventLength) {
-      msg = msg.substring(0, FifoLogger._maxEventLength) + '...';
+    if (FifoLogger.cfg.maxEventLength > 0 && msg.length > FifoLogger.cfg.maxEventLength) {
+      msg = msg.substring(0, FifoLogger.cfg.maxEventLength) + '...';
     }
 
     return msg;
@@ -245,7 +236,7 @@ export class FifoLogger {
     const date = new Date().toISOString();
     const severity = FifoLogger.toSeverity(logLevel);
     const out = {
-      name: FifoLogger._logPrefix,
+      name: FifoLogger.cfg.logPrefix,
       severity,
       date,
       message: message,
@@ -267,7 +258,7 @@ export class FifoLogger {
       })
       e += ']'
     }
-    return FifoLogger._logPrefix + ' ' + s + d + '[' + message + ']' + e;
+    return FifoLogger.cfg.logPrefix + ' ' + s + d + '[' + message + ']' + e;
   }
 
   private static buildTerminalColorMessage(logLevel: LogLevel, message: any, optionalParams: any[]) {
@@ -282,7 +273,7 @@ export class FifoLogger {
     const FgMagenta = '\x1b[35m';
     const FgCyan = '\x1b[36m';
     const FgWhite = '\x1b[37m';
-    const appName = Reset + FgWhite + FifoLogger._logPrefix;
+    const appName = Reset + FgWhite + FifoLogger.cfg.logPrefix;
     date = FgGreen + '[' + FgOrange + date + FgGreen + ']';
     let e = ''
     if (optionalParams) {
@@ -314,7 +305,7 @@ export class FifoLogger {
   }
 
   private static writeMessage(msg: string) {
-    if (FifoLogger._filename && FifoLogger._filename.length > 0) {
+    if (FifoLogger.cfg.fileName && FifoLogger.cfg.fileName.length > 0) {
       FifoLogger._logQueueItems.push(msg)
     } else {
       console.log(msg);
@@ -369,9 +360,9 @@ export class FifoLogger {
   }
 
   private static checkMustRejuvenateLogFile() {
-    fs.stat(FifoLogger._filename, (err, stats) => {
+    fs.stat(FifoLogger.cfg.fileName, (err, stats) => {
       if (err) {
-        console.error(`FifoLogger: Error stat-ing log file '${FifoLogger._filename}'. Error: ${err.message}`);
+        console.error(`FifoLogger: Error stat-ing log file '${FifoLogger.cfg.fileName}'. Error: ${err.message}`);
         return;
       }
       const actualSize = stats.size;
@@ -389,15 +380,15 @@ export class FifoLogger {
       let archFile = ""
       const date = new Date();
       const dateFormat = `${date.getFullYear()}_${date.getMonth() + 1}_${date.getDate()}_${date.getHours()}_${date.getMinutes()}_${date.getSeconds()}`;
-      const lastDot = FifoLogger._filename.lastIndexOf(".")
+      const lastDot = FifoLogger.cfg.fileName.lastIndexOf(".")
       if (lastDot > 0) {
-        const pre = FifoLogger._filename.substring(0, lastDot)
-        const post = FifoLogger._filename.substring(lastDot)
+        const pre = FifoLogger.cfg.fileName.substring(0, lastDot)
+        const post = FifoLogger.cfg.fileName.substring(lastDot)
         archFile = pre + "_" + dateFormat + post
       } else {
-        archFile = FifoLogger._filename + "_" + dateFormat
+        archFile = FifoLogger.cfg.fileName + "_" + dateFormat
       }
-      fs.renameSync(FifoLogger._filename, archFile)
+      fs.renameSync(FifoLogger.cfg.fileName, archFile)
 
       FifoLogger.openStream()
       FifoLogger._bCanWritemore = true

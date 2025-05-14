@@ -35,13 +35,7 @@ export declare class FifoLogger {
     private static readonly STREAM_ERROR_RETRY_DELAY_MS;
     private static readonly TO_REJUVENATE_MS;
     private static readonly ONE_MB_BYTES;
-    private static _dequeueTimeoutMs;
-    private static _logPrefix;
-    private static _hasColoredConsole;
-    private static _minLogLevel;
-    private static _maxEventLength;
-    private static _filename;
-    private static _jsonMode;
+    private static cfg;
     private static _logWriteStream;
     private static _logQueueItems;
     private static _bCanWritemore;

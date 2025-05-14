@@ -26,7 +26,7 @@ The package is published on npm ( https://www.npmjs.com/package/@dbalamo/fifolog
 Add in your package.json the dependency:<br>
 ```bash
   "dependencies": {
-    "@dbalamo/fifologger": "^1.0.2"
+    "@dbalamo/fifologger": "^1.0.3"
   }
 ```
 <br>
